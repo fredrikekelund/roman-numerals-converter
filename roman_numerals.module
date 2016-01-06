@@ -79,7 +79,18 @@ function roman_numerals_form_validate($form, &$form_state) {
  */
 function roman_numerals_form_submit($form, &$form_state) {
   $converter = new RomanConverter();
-  $converted = $converter->toInteger($form_state['values']['roman_numerals']);
 
-  drupal_set_message(t("That's equal to") . " $converted");
+  // I'm using a try/catch block here, since there's a risk that the user input
+  // is an incorrectly formatted roman numeral. We've already ensured that the
+  // input doesn't contained any weird characters, but validating that the input
+  // is correctly formatted without actually calling the toInteger method would
+  // basically require a reimplementation of that method, so instead we just
+  // catch any exceptions that are thrown.
+  try {
+    $converted = $converter->toInteger($form_state['values']['roman_numerals']);
+    drupal_set_message(t("That's equal to @numeral", ['@numeral' => $converted]));
+  } catch (Exception $error) {
+    $message = $error->getCode() === 2 ? t("That's an incorrectly formatted roman numeral") : $error->getMessage();
+    form_set_error('roman_numerals', $message);
+  }
 }

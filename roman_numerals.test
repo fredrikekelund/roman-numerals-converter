@@ -1,26 +1,120 @@
 <?php
-require 'roman-converter.php';
-
-class RomanConverterTest extends PHPUnit_Framework_TestCase
+/**
+ * Functional test case for roman_numerals module
+ */
+class RomanConverterTest extends DrupalWebTestCase
 {
-  public function testToInteger()
+  public static function getInfo()
   {
-    $romanConverter = new RomanConverter();
+    return [
+      'group' => 'Roman Numerals Converter',
+      'name' => 'Form submission',
+      'description' => 'Assert that the form can handle submissions and validate data',
+    ];
+  }
 
-    $this->assertEquals(1, $romanConverter->toInteger('I'));
-    $this->assertEquals(2, $romanConverter->toInteger('II'));
-    $this->assertEquals(4, $romanConverter->toInteger('IV'));
-    $this->assertEquals(472, $romanConverter->toInteger('CDLXXII'));
-    $this->assertEquals(1516, $romanConverter->toInteger('MDXVI'));
-    $this->assertEquals(2999, $romanConverter->toInteger('MMCMXCIX'));
+  public function setUp()
+  {
+    parent::setUp(['roman_numerals']);
   }
 
   /**
-   * @expectedException Exception
+   * Test that form input is correctly converted and displayed
    */
-  public function testException()
+  public function testFormSubmission()
+  {
+    $payload = ['roman_numerals' => 'MCMLIV'];
+    $this->drupalPost('roman_numerals', $payload, t('Submit'));
+
+    $this->assertText(t("That's equal to 1954"));
+  }
+
+  /**
+   * Test that faulty characters in the form input triggers a validation error
+   */
+  public function testFaultyCharacterValidation()
+  {
+    $payload = ['roman_numerals' => 'YMBC'];
+    $this->drupalPost('roman_numerals', $payload, t('Submit'));
+
+    $this->assertText(t('A roman numeral can only contain the characters'));
+  }
+
+  /**
+   * Test that incorrectly formatted form input triggers a validation error
+   */
+  public function testFaultyFormatValidation()
+  {
+    $payload = ['roman_numerals' => 'XD'];
+    $this->drupalPost('roman_numerals', $payload, t('Submit'));
+
+    $this->assertText(t("That's an incorrectly formatted roman numeral"));
+  }
+}
+
+/**
+ * Unit test for roman_converter functionality
+ */
+class RomanConverterUnitTest extends DrupalUnitTestCase
+{
+  public static function getInfo()
+  {
+    return [
+      'group' => 'Roman Numerals Converter',
+      'name' => 'Unit test',
+      'description' => 'Assert that the converter functionality works',
+    ];
+  }
+
+  public function setUp()
+  {
+    drupal_load('module', 'roman_numerals');
+    module_load_include('inc', 'roman_numerals', 'roman_converter');
+    parent::setUp();
+  }
+
+  /**
+   * Test that correct roman numerals are converted correctly
+   */
+  public function testRomanNumeralsConverter()
   {
     $romanConverter = new RomanConverter();
-    $romanConverter->toInteger('CAB');
+
+    $this->assertEqual(1, $romanConverter->toInteger('I'));
+    $this->assertEqual(2, $romanConverter->toInteger('II'));
+    $this->assertEqual(4, $romanConverter->toInteger('IV'));
+    $this->assertEqual(472, $romanConverter->toInteger('CDLXXII'));
+    $this->assertEqual(1516, $romanConverter->toInteger('MDXVI'));
+    $this->assertEqual(2999, $romanConverter->toInteger('MMCMXCIX'));
+  }
+
+  /**
+   * Test that faulty characters aren't permitted in the numeral
+   */
+  public function testFaultyCharacters()
+  {
+    $romanConverter = new RomanConverter();
+
+    try {
+      $converted = $romanConverter->toInteger('ICA');
+      $this->fail("Allowed faulty characters ($converted)");
+    } catch (Exception $error) {
+      $this->pass('Threw an error on faulty characters');
+    }
+  }
+
+  /**
+   * Test that an incorrectly formatted numeral throws an error
+   */
+  public function testFaultyNumeral()
+  {
+    $romanConverter = new RomanConverter();
+
+    try {
+      $converted = $romanConverter->toInteger('ID');
+      $this->fail("Allowed faulty numeral string ($converted)");
+    } catch (Exception $error) {
+      $this->pass('Threw an error on faulty numeral string');
+    }
   }
 }

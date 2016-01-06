@@ -81,8 +81,17 @@ class RomanConverter
         throw new Exception('String contained characters that aren\'t roman numerals', 1);
       }
 
+      // Roman numerals are always formatted in a descending fashion, with the
+      // biggest numbers first and the smallest last. We want to assert that the
+      // string isn't incorrectly formatted by making sure that the matched
+      // integers are indeed descending
+      if (isset($lastMatch) && $lastMatch['integer'] < $match['integer']) {
+        throw new Exception('String wasn\'t correctly formatted', 2);
+      }
+
       $i += strlen($match['roman']);
       $count += $match['integer'];
+      $lastMatch = $match;
     }
 
     return $count;
