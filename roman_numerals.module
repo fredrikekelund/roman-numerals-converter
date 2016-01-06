@@ -1,0 +1,58 @@
+<?php
+function roman_numerals_menu() {
+  return [
+    'roman_numerals' => [
+      'title' => t('Roman Numerals Converter'),
+      'file' => 'roman_converter.inc',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => ['roman_numerals_form'],
+      'access callback' => true,
+    ]
+  ];
+}
+
+function roman_numerals_form($form, &$form_state) {
+  $form['roman_numerals'] = [
+    '#type' => 'textfield',
+    '#title' => t('Roman numerals'),
+    '#description' => t("Enter a roman numeral that you want converted to an integer"),
+    '#required' => true,
+  ];
+
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#ajax' => [
+      'callback' => 'roman_numerals_form_callback',
+      'wrapper' => 'result',
+      'effect' => 'none',
+    ],
+  ];
+
+  $form['result'] = [
+    '#type' => 'markup',
+    '#prefix' => '<div id="result">',
+    '#suffix' => '</div>',
+  ];
+
+  return $form;
+}
+
+function roman_numerals_form_callback($form, &$form_state) {
+  return $form['result'];
+}
+
+function roman_numerals_form_validate($form, &$form_state) {
+  $roman_numerals = $form_state['values']['roman_numerals'];
+
+  if (!preg_match('/^[IVXLCDM]+$/', $roman_numerals)) {
+    form_set_error('roman_numerals', t('A roman numeral can only contain the characters I, V, X, L, C, D and M'));
+  }
+}
+
+function roman_numerals_form_submit($form, &$form_state) {
+  $converter = new RomanConverter();
+  $converted = $converter->toInteger($form_state['values']['roman_numerals']);
+
+  drupal_set_message(t("That's equal to") . " $converted");
+}
