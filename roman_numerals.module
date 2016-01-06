@@ -18,6 +18,12 @@ function roman_numerals_menu() {
  * Implementation of hook_form
  */
 function roman_numerals_form($form, &$form_state) {
+  // We rely on the theme for styling purposes, but this fixes a small nuisance
+  // and demonstrates how additional custom styles could be added
+  $form['#attached']['css'] = [
+    drupal_get_path('module', 'roman_numerals') . '/roman_numerals.css',
+  ];
+
   $form['roman_numerals'] = [
     '#type' => 'textfield',
     '#title' => t('Roman numerals'),
