@@ -1,4 +1,7 @@
 <?php
+/**
+ * Implementation of hook_menu
+ */
 function roman_numerals_menu() {
   return [
     'roman_numerals' => [
@@ -11,12 +14,18 @@ function roman_numerals_menu() {
   ];
 }
 
+/**
+ * Implementation of hook_form
+ */
 function roman_numerals_form($form, &$form_state) {
   $form['roman_numerals'] = [
     '#type' => 'textfield',
     '#title' => t('Roman numerals'),
     '#description' => t("Enter a roman numeral that you want converted to an integer"),
     '#required' => true,
+    '#attributes' => [
+      'placeholder' => 'XIV'
+    ]
   ];
 
   $form['submit'] = [
@@ -38,10 +47,19 @@ function roman_numerals_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * AJAX callback for roman_numerals form submission. Since this function simply
+ * returns a portion of the form to be swapped out with the result of the form
+ * submission, the form would gracefully degrade in a non-JS environment.
+ * However, in 2016, such environments are pretty rare.
+ */
 function roman_numerals_form_callback($form, &$form_state) {
   return $form['result'];
 }
 
+/**
+ * Implementation of hook_form_validate
+ */
 function roman_numerals_form_validate($form, &$form_state) {
   $roman_numerals = $form_state['values']['roman_numerals'];
 
@@ -50,6 +68,9 @@ function roman_numerals_form_validate($form, &$form_state) {
   }
 }
 
+/**
+ * Implementation of hook_form_submit
+ */
 function roman_numerals_form_submit($form, &$form_state) {
   $converter = new RomanConverter();
   $converted = $converter->toInteger($form_state['values']['roman_numerals']);
