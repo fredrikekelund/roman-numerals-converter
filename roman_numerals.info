@@ -1,5 +1,4 @@
 name = Roman Numeral Converter
 description = Provides a form that can convert roman numerals to an integer
 core = 7.x
-dependencies[] = simpletest
 files[] = roman_numerals.test
