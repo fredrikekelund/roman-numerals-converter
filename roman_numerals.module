@@ -1,15 +1,32 @@
 <?php
 /**
- * Implementation of hook_menu
+ * Implementation of hook_block_info
  */
-function roman_numerals_menu() {
+function roman_numerals_block_info() {
   return [
-    'roman_numerals' => [
-      'title' => t('Roman Numerals Converter'),
-      'file' => 'roman_converter.inc',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => ['roman_numerals_form'],
-      'access callback' => true,
+    'roman_numerals_form' => [
+      'info' => t('Roman numerals conversion form'),
+    ]
+  ];
+}
+
+/**
+ * Implementation of hook_block_view
+ *
+ * Since this module only provides one block, we don't need to look at what
+ * module is being requested, which can be determined from the $delta property.
+ */
+function roman_numerals_block_view($delta) {
+  // The form actually needs to be assigned to an intermediate variable to avoid
+  // an error about reference variables...
+  $form = drupal_get_form('roman_numerals_form');
+
+  return [
+    'subject' => t('Roman numerals converter'),
+    'content' => [
+      'form' => [
+        '#markup' => drupal_render($form),
+      ]
     ]
   ];
 }
@@ -36,7 +53,7 @@ function roman_numerals_form($form, &$form_state) {
 
   $form['submit'] = [
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Convert'),
     '#ajax' => [
       'callback' => 'roman_numerals_form_callback',
       'wrapper' => 'result',
@@ -78,6 +95,8 @@ function roman_numerals_form_validate($form, &$form_state) {
  * Implementation of hook_form_submit
  */
 function roman_numerals_form_submit($form, &$form_state) {
+  module_load_include('inc', 'roman_numerals', 'roman_converter');
+
   $converter = new RomanConverter();
 
   // I'm using a try/catch block here, since there's a risk that the user input
