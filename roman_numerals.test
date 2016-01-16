@@ -115,15 +115,20 @@ class RomanConverterUnitTest extends DrupalUnitTestCase
   /**
    * Test that an incorrectly formatted numeral throws an error
    */
-  public function testFaultyNumeral()
+  public function testFaultyNumerals()
   {
     $romanConverter = new RomanConverter();
 
     try {
       $converted = $romanConverter->toInteger('ID');
       $this->fail("Allowed faulty numeral string ($converted)");
-    } catch (Exception $error) {
-      $this->pass('Threw an error on faulty numeral string');
-    }
+    } catch (Exception $error) {}
+
+    try {
+      $converted = $romanConverter->toInteger('IVIV');
+      $this->fail("Allowed faulty numeral string ($converted)");
+    } catch (Exception $error) {}
+
+    $this->pass("Didn't allow faulty numeral strings");
   }
 }

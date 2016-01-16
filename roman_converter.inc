@@ -1,6 +1,8 @@
 <?php
 /**
 * Convert roman numerals to arabic numerals, ie. an integer
+*
+* Allows for conversion of numerals equal to up to 2999
 */
 class RomanConverter
 {
@@ -41,7 +43,8 @@ class RomanConverter
     ['roman' => 'DCC', 'integer' => 700],
     ['roman' => 'DCCC', 'integer' => 800],
     ['roman' => 'CM', 'integer' => 900],
-    ['roman' => 'M', 'integer' => 1000]
+    ['roman' => 'M', 'integer' => 1000],
+    ['roman' => 'MM', 'integer' => 2000]
   ];
 
   private function getNextMatch($numeral)
@@ -85,7 +88,7 @@ class RomanConverter
       // biggest numbers first and the smallest last. We want to assert that the
       // string isn't incorrectly formatted by making sure that the matched
       // integers are indeed descending
-      if (isset($lastMatch) && $lastMatch['integer'] < $match['integer']) {
+      if (isset($lastMatch) && $lastMatch['integer'] <= $match['integer']) {
         throw new Exception('String wasn\'t correctly formatted', 2);
       }
 
